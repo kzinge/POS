@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listas</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Lista de Tarefas</h1>
+    </header>
+    <main>
+        <div class="texto">Olá, veja aqui suas tarefas</div>
+
+        <table id="tarefas">
+            <tr>
+                <th>Título</th>
+                <th>Descrição</th>
+                <th class="status">Status</th>
+                <th class="nada"></th>
+            </tr>
+            <tr class="tarefa">
+                <td>Tela html</td>
+                <td>Crir tela html com CSS para um testezinho de POS</td>
+                <td class="status">Pendente</td>
+                <td><button onclick="deletarTarefa(${tarefa.id})">Excluir</button></td>
+            </tr>
+        </table>
+
+        <div class="button">
+            <button id="botao">Nova Terefa</button>
+        </div>
+
+        <section id="novatarefa">
+            <button id="fechar">x</button>
+            <form id="novatarefa">
+                <div class="titulo">
+                    <label for="titulo">Título</label>
+                    <input type="text" placeholder="Adicione um título para sua tarefa" id="titulo", name="titulo">
+                </div>
+                <div class="descricao">
+                    <label for="">Descrição</label>
+                    <textarea name="desc" id="desc" cols="30" rows="10"></textarea>
+                </div>
+                <button type="submit">Criar</button>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>Gerencie suas tarefas</p>
+    </footer>
+
+    <script src="./click.js"></script>
+    <script> //listar
+        $.ajax({
+        url: 'http://localhost:8000/tarefas/',
+        method: 'GET',
+        success: function(data) {
+          console.log('Resultado:', data);
+          data.forEach(tarefa => {
+            $('#tarefas').append(`
+            <tr class='tarefa'>
+                <td>${tarefa.titulo}</td>
+                <td>${tarefa.descricao}</td>
+                <td>${tarefa.concluido}</td>
+                <td><button onclick="deletarTarefa(${tarefa.id})">Excluir</button></td>
+            </tr>
+            `);
+          });
+        },
+        error: function(xhr, status, error) {
+          console.error('Erro na requisição:', error);
+        }
+      });
+    </script>
+
+<script> //criar
+        $('#novatarefa').submit(function(e) {
+        e.preventDefault(); // impede o recarregamento da página
+
+  const novaTarefa = {
+    id: 0, // mandar id tbm
+    titulo: $('#titulo').val(),
+    descricao: $('#desc').val(),
+    concluido: false
+  };
+
+  $.ajax({
+    url: 'http://localhost:8000/tarefas/',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(novaTarefa),
+    success: function(data) {
+      console.log('Tarefa criada:', data);
+      // opcional: atualizar a tabela
+    },
+    error: function(xhr, status, error) {
+      console.error('Erro ao criar tarefa:', error);
+    }
+  });
+});
+    </script>
+
+<script> //remover tarefa
+function deletarTarefa(id) {
+  $.ajax({
+    url: `http://localhost:8000/tarefas/?tarefa_id=${id}`,
+    method: 'DELETE',
+    success: function(data) {
+      console.log('Tarefa excluída:', data);
+      $(`.tarefa-${id}`).remove(); //remove tarefa
+    },
+    error: function(xhr, status, error) {
+      console.error('Erro ao excluir tarefa:', xhr.responseText);
+    }
+  });
+}
+</script>
+</body>
+</html>
